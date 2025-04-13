@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Главная страница</title>
+</head>
+<body>
+<div sec:authorize="isAnonymous()">
+  <h1>Добро пожаловать!</h1>
+  <a href="/login">Войти</a> |
+  <a href="/register">Регистрация</a>
+</div>
+
+</body>
+</html>
