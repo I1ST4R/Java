@@ -1,8 +1,7 @@
-package implementations;
+package com.example.javas.implementations;
 
-import Repository.UserRepository;
-import implementations.UserDetailsImpl;
-import models.Users;
+import com.example.javas.models.Users;
+import com.example.javas.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,19 +10,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
+    private final UserRepository userRepository;
 
-    private final UserRepository usersRepository;
-
-    public UserDetailsServiceImpl(UserRepository usersRepository) {
-        this.usersRepository = usersRepository;
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = usersRepository.findByUsername(username)
+        Users user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
         return UserDetailsImpl.build(user);
     }
-}
+} 

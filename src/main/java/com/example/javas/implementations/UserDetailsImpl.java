@@ -1,38 +1,28 @@
-package implementations;
+package com.example.javas.implementations;
 
-import lombok.Getter;
-import models.Users;
+import com.example.javas.models.Users;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Data
+@AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
-    // Геттеры
-    @Getter
-    private final int id;
-    private final String username;
-    @Getter
-    private final String email;
-    private final String password;
-    private final Collection<? extends GrantedAuthority> authorities;
-
-    // Явный конструктор
-    public UserDetailsImpl(int id, String username, String email, String password,
-                           Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.authorities = authorities;
-    }
+    private Long id;
+    private String username;
+    private String email;
+    @JsonIgnore
+    private String password;
+    private Collection<? extends GrantedAuthority> authorities;
 
     public static UserDetailsImpl build(Users user) {
         List<GrantedAuthority> authorities = user.getRoles().stream()
@@ -53,17 +43,6 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    // Остальные обязательные методы UserDetails
-    @Override
     public boolean isAccountNonExpired() {
         return true;
     }
@@ -82,4 +61,4 @@ public class UserDetailsImpl implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-}
+} 

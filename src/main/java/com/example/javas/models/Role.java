@@ -1,10 +1,8 @@
-package models;
+package com.example.javas.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.Id;
-
 
 @Entity
 @Table(name = "roles")
@@ -18,19 +16,4 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private ERole name;
-    public int getId() {
-        return id;
-    }
-
-    public ERole getName() {
-        return name;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setName(ERole name) {
-        this.name = name;
-    }
-}
+} 
