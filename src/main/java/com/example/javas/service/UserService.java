@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -86,5 +87,30 @@ public class UserService {
             log.error("Registration failed: {}", e.getMessage(), e);
             throw e;
         }
+    }
+
+    @Transactional
+    public Users saveUser(Users user) {
+        // Проверяем, существует ли пользователь с таким email, только если email изменился
+        Users existingUser = userRepository.findById(user.getId()).orElse(null);
+        if (existingUser != null && !existingUser.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(user.getEmail())) {
+                throw new RuntimeException("User with email " + user.getEmail() + " already exists");
+            }
+        }
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public void assignRoleToUser(Long userId, String roleName) {
+        userRepository.assignRoleToUser(userId, roleName);
+    }
+
+    public Optional<Users> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 } 

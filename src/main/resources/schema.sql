@@ -57,11 +57,15 @@ CREATE TABLE trainer_skills (
 
 -- Insert default roles
 INSERT INTO roles (name) VALUES ('ROLE_USER');
+INSERT INTO roles (name) VALUES ('ROLE_TRAINER');
 INSERT INTO roles (name) VALUES ('ROLE_ADMIN');
 
--- Insert test user
+-- Insert admin user (password: root)
 INSERT INTO users (username, email, password, created_at, updated_at)
-VALUES ('admin', 'admin@example.com', '$2a$10$wGlFMge3Mv6v.EYcGnfJX.xh19Xk9ai988dk78w504HywyNJmCLz2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+VALUES ('root', 'root@example.com', '$2a$10$wGlFMge3Mv6v.EYcGnfJX.xh19Xk9ai988dk78w504HywyNJmCLz2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Assign admin role to test user
-INSERT INTO user_roles (user_id, role_id) VALUES (1, 2); 
+-- Assign admin role to root user
+INSERT INTO user_roles (user_id, role_id) 
+SELECT u.id, r.id 
+FROM users u, roles r 
+WHERE u.username = 'root' AND r.name = 'ROLE_ADMIN'; 

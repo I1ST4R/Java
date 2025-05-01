@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .profile-photo {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">My Profile</h1>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <img th:src="@{'/uploads/' + ${trainer.photoPath}}" 
+                         th:alt="${trainer.firstName} + ' ' + ${trainer.lastName} + ' Photo'"
+                         class="card-img-top profile-photo mx-auto mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${trainer.firstName} + ' ' + ${trainer.lastName}"></h5>
+                        <p class="card-text">
+                            <strong>Specialization:</strong> <span th:text="${trainer.specialization}"></span><br>
+                            <strong>Experience:</strong> <span th:text="${trainer.experienceYears} + ' years'"></span><br>
+                            <strong>Rate:</strong> $<span th:text="${trainer.hourlyRate}"></span>/hour
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Edit Profile</h5>
+                        <form th:action="@{/trainer/profile/update}" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-control" name="firstName" th:value="${trainer.firstName}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-control" name="lastName" th:value="${trainer.lastName}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Specialization</label>
+                                <input type="text" class="form-control" name="specialization" th:value="${trainer.specialization}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" th:value="${trainer.email}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-control" name="phone" th:value="${trainer.phone}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Hourly Rate</label>
+                                <input type="number" class="form-control" name="hourlyRate" th:value="${trainer.hourlyRate}" step="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Experience (years)</label>
+                                <input type="number" class="form-control" name="experienceYears" th:value="${trainer.experienceYears}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="description" rows="3" th:text="${trainer.description}"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Photo</label>
+                                <input type="file" class="form-control" name="photo" accept="image/*">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

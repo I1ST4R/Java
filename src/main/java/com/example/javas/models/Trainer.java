@@ -1,4 +1,4 @@
-package com.example.javas.entity;
+package com.example.javas.models;
 
 import jakarta.persistence.*;
 import java.util.List;
@@ -41,6 +41,10 @@ public class Trainer {
     @CollectionTable(name = "trainer_skills", joinColumns = @JoinColumn(name = "trainer_id"))
     @Column(name = "skill")
     private List<String> skills;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private Users user;
 
     // Getters and Setters
     public Long getId() {
@@ -129,5 +133,13 @@ public class Trainer {
 
     public void setSkills(List<String> skills) {
         this.skills = skills;
+    }
+
+    public Users getUser() {
+        return user;
+    }
+
+    public void setUser(Users user) {
+        this.user = user;
     }
 } 

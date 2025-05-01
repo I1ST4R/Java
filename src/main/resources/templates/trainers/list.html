@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trainers List</title>
+    <title>Наши тренеры</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .trainer-card {
@@ -25,12 +25,17 @@
 </head>
 <body>
     <div class="container mt-4">
-        <h1 class="mb-4">Our Trainers</h1>
+        <h1 class="mb-4">Наши тренеры</h1>
         
-        <!-- Add New Trainer Button -->
-        <div class="mb-4">
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+        
+        <!-- Add New Trainer Button (Admin Only) -->
+        <div class="mb-4" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTrainerModal">
-                Add New Trainer
+                Добавить тренера
             </button>
         </div>
 
@@ -44,17 +49,17 @@
                     <div class="card-body">
                         <h5 class="card-title" th:text="${trainer.firstName} + ' ' + ${trainer.lastName}"></h5>
                         <p class="card-text">
-                            <strong>Specialization:</strong> <span th:text="${trainer.specialization}"></span><br>
-                            <strong>Experience:</strong> <span th:text="${trainer.experienceYears} + ' years'"></span><br>
-                            <strong>Rate:</strong> $<span th:text="${trainer.hourlyRate}"></span>/hour
+                            <strong>Специализация:</strong> <span th:text="${trainer.specialization}"></span><br>
+                            <strong>Стаж:</strong> <span th:text="${trainer.experienceYears} + ' лет'"></span><br>
+                            <strong>Ставка:</strong> $<span th:text="${trainer.hourlyRate}"></span>/час
                         </p>
                         <div class="mb-3">
-                            <strong>Skills:</strong><br>
+                            <strong>Навыки:</strong><br>
                             <span th:each="skill : ${trainer.skills}" 
                                   class="badge bg-secondary skill-badge" 
                                   th:text="${skill}"></span>
                         </div>
-                        <a th:href="@{/trainers/{id}(id=${trainer.id})}" class="btn btn-primary">View Details</a>
+                        <a th:href="@{/trainers/{id}(id=${trainer.id})}" class="btn btn-primary">Подробнее</a>
                     </div>
                 </div>
             </div>
@@ -65,21 +70,32 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Add New Trainer</h5>
+                        <h5 class="modal-title">Добавить нового тренера</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <form th:action="@{/trainers/add}" method="post" enctype="multipart/form-data">
+                            <h5 class="mb-3">Учетная запись пользователя</h5>
                             <div class="mb-3">
-                                <label class="form-label">First Name</label>
+                                <label class="form-label">Логин</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Пароль</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+
+                            <h5 class="mb-3">Информация о тренере</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Имя</label>
                                 <input type="text" class="form-control" name="firstName" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Last Name</label>
+                                <label class="form-label">Фамилия</label>
                                 <input type="text" class="form-control" name="lastName" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Specialization</label>
+                                <label class="form-label">Специализация</label>
                                 <input type="text" class="form-control" name="specialization" required>
                             </div>
                             <div class="mb-3">
@@ -87,30 +103,30 @@
                                 <input type="email" class="form-control" name="email" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Phone</label>
+                                <label class="form-label">Телефон</label>
                                 <input type="tel" class="form-control" name="phone" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Hourly Rate</label>
+                                <label class="form-label">Ставка ($/час)</label>
                                 <input type="number" class="form-control" name="hourlyRate" step="0.01" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Experience (years)</label>
+                                <label class="form-label">Стаж (лет)</label>
                                 <input type="number" class="form-control" name="experienceYears" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Description</label>
+                                <label class="form-label">Описание</label>
                                 <textarea class="form-control" name="description" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Photo</label>
+                                <label class="form-label">Фото</label>
                                 <input type="file" class="form-control" name="photo" accept="image/*">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Skills (comma-separated)</label>
-                                <input type="text" class="form-control" name="skills" placeholder="e.g., Strength Training, Weight Loss, Nutrition">
+                                <label class="form-label">Навыки (через запятую)</label>
+                                <input type="text" class="form-control" name="skills" placeholder="Например: Силовые тренировки, Похудение, Питание">
                             </div>
-                            <button type="submit" class="btn btn-primary">Add Trainer</button>
+                            <button type="submit" class="btn btn-primary">Добавить тренера</button>
                         </form>
                     </div>
                 </div>
