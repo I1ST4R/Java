@@ -1,12 +1,18 @@
 package com.example.javas.controllers;
 
+import com.example.javas.dto.ScheduleIntervalDTO;
 import com.example.javas.models.Trainer;
 import com.example.javas.models.Users;
+import com.example.javas.service.TrainerScheduleService;
 import com.example.javas.service.TrainerService;
 import com.example.javas.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,9 +23,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/trainers")
@@ -29,12 +38,14 @@ public class TrainerController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final Path uploadDir;
+    private final TrainerScheduleService scheduleService;
 
     @Autowired
-    public TrainerController(TrainerService trainerService, UserService userService, PasswordEncoder passwordEncoder) {
+    public TrainerController(TrainerService trainerService, UserService userService, PasswordEncoder passwordEncoder, TrainerScheduleService scheduleService) {
         this.trainerService = trainerService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.scheduleService = scheduleService;
         this.uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
         try {
             Files.createDirectories(uploadDir);
@@ -50,15 +61,36 @@ public class TrainerController {
         List<Trainer> trainers = trainerService.getAllTrainers();
         logger.info("Found {} trainers", trainers.size());
         model.addAttribute("trainers", trainers);
-        return "trainers/list";
+        return "trainer/list";
     }
 
     @GetMapping("/{id}")
-    public String viewTrainer(@PathVariable Long id, Model model) {
+    public String viewTrainer(@PathVariable Long id, Model model, Authentication authentication) {
         Trainer trainer = trainerService.getTrainerById(id);
-        logger.info("Viewing trainer: {}", trainer);
+        if (trainer == null) {
+            return "redirect:/trainers";
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate twoWeeksLater = today.plusWeeks(2);
+        
+        List<com.example.javas.dto.TrainerScheduleDTO> schedules = scheduleService.getTrainerScheduleForPeriod(id, today, twoWeeksLater);
+        model.addAttribute("schedules", schedules);
         model.addAttribute("trainer", trainer);
-        return "trainers/details";
+
+        // Проверяем, является ли текущий пользователь тренером
+        boolean isCurrentUserTrainer = false;
+        if (authentication != null) {
+            for (GrantedAuthority authority : authentication.getAuthorities()) {
+                if ("ROLE_TRAINER".equals(authority.getAuthority())) {
+                    isCurrentUserTrainer = true;
+                    break;
+                }
+            }
+        }
+        model.addAttribute("isCurrentUserTrainer", isCurrentUserTrainer);
+
+        return "trainer/details";
     }
 
     @PostMapping("/add")
@@ -122,10 +154,21 @@ public class TrainerController {
             logger.info("Trainer saved successfully with ID: {}", trainer.getId());
             return "redirect:/trainers";
 
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Error creating trainer: {}", e.getMessage(), e);
-            model.addAttribute("error", e.getMessage());
-            return "trainers/list";
+            String errorMessage = e.getMessage();
+            if (errorMessage.contains("username")) {
+                model.addAttribute("error", "Пользователь с таким именем уже существует");
+            } else if (errorMessage.contains("email")) {
+                model.addAttribute("error", "Пользователь с таким email уже существует");
+            } else {
+                model.addAttribute("error", "Произошла ошибка при создании тренера: " + e.getMessage());
+            }
+            return "trainer/list";
+        } catch (Exception e) {
+            logger.error("Unexpected error creating trainer: {}", e.getMessage(), e);
+            model.addAttribute("error", "Произошла непредвиденная ошибка при создании тренера");
+            return "trainer/list";
         }
     }
 

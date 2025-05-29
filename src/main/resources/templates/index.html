@@ -34,32 +34,28 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Главная</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="/services">Услуги</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/trainers">Тренеры</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/contacts">Контакты</a>
+                <li class="nav-item" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
+                    <a class="nav-link" href="/client/trainings">
+                        <i class="bi bi-calendar-check"></i> Мои тренировки
+                    </a>
                 </li>
                 <li class="nav-item" th:if="${#authorization.expression('hasRole(''ROLE_TRAINER'')')}">
-                    <a class="nav-link" href="/trainer/profile">
-                        <i class="bi bi-person-circle"></i> Личный кабинет
+                    <a class="nav-link" href="/trainer/schedule">
+                        <i class="bi bi-calendar-week"></i> Моё расписание
                     </a>
                 </li>
                 <li class="nav-item" th:if="${#authorization.expression('isAuthenticated()')}">
-                    <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="btn btn-link nav-link">Выйти</button>
-                    </form>
+                    <a class="nav-link" href="/profile">
+                        <i class="bi bi-person-circle"></i> Личный кабинет
+                    </a>
                 </li>
                 <li class="nav-item" th:unless="${#authorization.expression('isAuthenticated()')}">
                     <a class="nav-link" href="/login">Войти</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/register">Регистрация</a>
                 </li>
             </ul>
         </div>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Информация о тренере</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .trainer-photo {
+            height: 400px;
+            object-fit: cover;
+            width: 100%;
+            border-radius: 5px;
+        }
+        .skill-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .contact-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        /* Стили для таймлайна на странице деталей тренера */
+        .client-timeline-day-card {
+            margin-bottom: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.75rem;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .client-timeline-day-card-header {
+            padding: 1rem 1.25rem;
+            background-color: #e9ecef;
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+        }
+        .client-timeline-day-card-header h5 {
+            margin-bottom: 0;
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+        .client-timeline-today-highlight .client-timeline-day-card-header {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0a58ca;
+        }
+        .client-timeline-today-highlight {
+             border: 2px solid #0d6efd;
+        }
+        .client-timeline-day-card-body {
+            padding: 1.25rem;
+        }
+        .client-timeline-wrapper {
+            margin-bottom: 1rem;
+        }
+        .client-timeline-container {
+            position: relative;
+            height: 90px;
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+        .client-timeline-hours {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            display: flex;
+            font-size: 0.8rem;
+            border-bottom: 1px solid #ced4da;
+        }
+        .client-timeline-hours .hour-mark,
+        .client-timeline-hours .half-hour-mark {
+            flex-grow: 1;
+            text-align: left;
+            position: relative;
+            box-sizing: border-box;
+            height: 100%;
+        }
+        .client-timeline-hours .hour-mark::before,
+        .client-timeline-hours .half-hour-mark::before {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            left: 0;
+            width: 1px;
+            height: 60px;
+            background-color: #d0d2d5;
+        }
+        .client-timeline-hours .half-hour-mark::before {
+            background-color: #e0e2e5;
+        }
+        .client-timeline-intervals {
+            position: absolute;
+            border-bottom: 1px solid #ced4da;
+            border-right: 1px solid #ced4da;
+            top: 30px;
+            left: 0;
+            right: 0;
+            height: 60px;
+        }
+        .client-timeline-interval-block {
+            position: absolute;
+            height: 85%;
+            top: 7.5%;
+            border-radius: 0.375rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-sizing: border-box;
+            border: 1px solid rgba(0,0,0,0.15);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            z-index: 10;
+        }
+        .client-status-undefined { background-color: #ffc107; color: #212529; border-color: #e0a800; }
+        .client-status-available { 
+            background-color: #198754; 
+            color: white; 
+            border-color: #146c43;
+            cursor: pointer;
+        }
+        .client-status-available:hover {
+            background-color: #157347;
+            border-color: #146c43;
+        }
+        .client-status-unavailable { background-color: #dc3545; color: white; border-color: #b02a37; }
+        .client-status-booked { background-color: #fd7e14; color: white; border-color: #e66a00; }
+
+        .interval-description-client {
+            font-size: 0.7rem;
+            line-height: 1.3;
+            max-height: 3.9em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 4px 0;
+            color: inherit;
+            text-align: center;
+        }
+        .btn-book-interval {
+            font-size: 0.65rem;
+            padding: 1px 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <img th:src="@{'/uploads/' + ${trainer.photoPath != null ? trainer.photoPath : 'default-trainer.jpg'}}" 
+                     class="trainer-photo" 
+                     th:alt="${trainer.firstName + ' ' + trainer.lastName + ' фото'}">
+            </div>
+            <div class="col-md-6">
+                <h1 th:text="${trainer.firstName + ' ' + trainer.lastName}"></h1>
+                <h3 class="text-muted" th:text="${trainer.specialization}"></h3>
+                
+                <div class="mt-4">
+                    <h4>О тренере</h4>
+                    <p th:text="${trainer.description}"></p>
+                </div>
+
+                <div class="mt-4">
+                    <h4>Навыки</h4>
+                    <div>
+                        <span class="badge bg-primary skill-badge" th:each="skill : ${trainer.skills}" th:text="${skill}"></span>
+                    </div>
+                </div>
+
+                <div class="contact-info">
+                    <h4>Контактная информация</h4>
+                    <p><strong>Email:</strong> <span th:text="${trainer.email}"></span></p>
+                    <p><strong>Телефон:</strong> <span th:text="${trainer.phone}"></span></p>
+                    <p><strong>Стоимость часа:</strong> <span th:text="${trainer.hourlyRate}"></span> ₽</p>
+                    <p><strong>Опыт работы:</strong> <span th:text="${trainer.experienceYears}"></span> лет</p>
+                </div>
+
+                <div class="mt-4">
+                    <a href="/trainers" class="btn btn-secondary">Назад к списку тренеров</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Расписание тренера -->
+        <div class="mt-5">
+            <hr>
+            <h2 class="mb-4">Расписание</h2>
+            <div th:if="${schedules != null}">
+                <div th:each="schedule, schedStat : ${schedules}" 
+                     class="client-timeline-day-card"
+                     th:classappend="${schedule.date.equals(today)} ? 'client-timeline-today-highlight' : ''">
+                    
+                    <div class="client-timeline-day-card-header">
+                        <h5 th:text="${#strings.capitalize(#temporals.format(schedule.date, 'EEEE')) + ', ' + #temporals.format(schedule.date, 'dd MMMM yyyy')}"></h5>
+                    </div>
+                    
+                    <div class="client-timeline-day-card-body">
+                        <div class="client-timeline-wrapper">
+                            <div class="client-timeline-container" th:id="'clientTimelineContainer-' + ${schedStat.index}">
+                                <div class="client-timeline-hours">
+                                    <th:block th:each="i : ${#numbers.sequence(0, 27)}">
+                                        <div th:class="${i % 2 == 0 ? 'hour-mark' : 'half-hour-mark'}"
+                                             th:text="${i % 2 == 0 ? #temporals.format(#temporals.createNow().withHour(i/2).withMinute(0), 'HH:mm') : ''}">
+                                        </div>
+                                    </th:block>
+                                </div>
+                                <div class="client-timeline-intervals">
+                                    <th:block th:if="${schedule.intervals != null and !schedule.intervals.isEmpty()}">
+                                        <div th:each="interval : ${schedule.intervals}"
+                                             class="client-timeline-interval-block"
+                                             th:classappend="'client-status-' + ${interval.status.toString().toLowerCase()}"
+                                             th:style="'left: ' + ${(interval.startTime.toSecondOfDay() - 28800) * 100 / 50400} + '%; width: ' + ${(interval.endTime.toSecondOfDay() - interval.startTime.toSecondOfDay()) * 100 / 50400} + '%;'"
+                                             th:onclick="${interval.status.toString() == 'AVAILABLE'} ? 'showBookingConfirmation(this)' : null"
+                                             th:data-interval-id="${interval.id}"
+                                             th:data-formatted-date="${#temporals.format(schedule.date, 'dd.MM.yyyy')}"
+                                             th:data-start-time="${#temporals.format(interval.startTime, 'HH:mm')}"
+                                             th:data-end-time="${#temporals.format(interval.endTime, 'HH:mm')}"
+                                             th:data-description="${interval.description}">
+                                            <div th:text="${#temporals.format(interval.startTime, 'HH:mm') + ' - ' + #temporals.format(interval.endTime, 'HH:mm')}"></div>
+                                            <div th:if="${interval.description != null and !interval.description.isEmpty()}"
+                                                 class="interval-description-client"
+                                                 th:text="${interval.description}"></div>
+                                        </div>
+                                    </th:block>
+                                    <div th:if="${schedule.intervals == null or schedule.intervals.isEmpty()}" 
+                                         class="text-center text-muted py-3">
+                                        Нет запланированных занятий
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${schedules == null}" class="alert alert-warning">
+                <p>Расписание тренера пока не заполнено.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения бронирования -->
+    <div class="modal fade" id="bookingConfirmationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Подтверждение бронирования</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите забронировать это занятие?</p>
+                    <p><strong>Тренер:</strong> <span th:text="${trainer.firstName + ' ' + trainer.lastName}"></span></p>
+                    <p><strong>Дата:</strong> <span id="modalBookingDate"></span></p>
+                    <p><strong>Время:</strong> <span id="modalBookingTime"></span></p>
+                    <p><strong>Описание:</strong> <span id="modalBookingDescription"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="confirmBookingButton">Подтвердить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const csrfToken = /*[[${_csrf != null ? _csrf.token : null}]]*/ null;
+        const csrfHeaderName = /*[[${_csrf != null ? _csrf.headerName : null}]]*/ null;
+
+        function showBookingConfirmation(element) {
+            const intervalId = element.getAttribute('data-interval-id');
+            const date = element.getAttribute('data-formatted-date');
+            const startTime = element.getAttribute('data-start-time');
+            const endTime = element.getAttribute('data-end-time');
+            const description = element.getAttribute('data-description');
+            
+            document.getElementById('modalBookingDate').textContent = date;
+            document.getElementById('modalBookingTime').textContent = startTime + ' - ' + endTime;
+            document.getElementById('modalBookingDescription').textContent = description || 'Нет описания';
+            
+            const confirmButton = document.getElementById('confirmBookingButton');
+            confirmButton.setAttribute('data-interval-id', intervalId);
+            
+            const bookingModal = new bootstrap.Modal(document.getElementById('bookingConfirmationModal'));
+            bookingModal.show();
+        }
+
+        document.getElementById('confirmBookingButton').addEventListener('click', function() {
+            const intervalId = this.getAttribute('data-interval-id');
+            
+            fetch('/client/book/interval/' + intervalId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeaderName]: csrfToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(text || 'Ошибка при бронировании');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Ошибка бронирования:', error);
+                alert('Ошибка бронирования: ' + error.message);
+            })
+            .finally(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('bookingConfirmationModal'));
+                if (modal) {
+                    modal.hide();
+                }
+            });
+        });
+        /*]]>*/
+    </script>
+</body>
+</html> 

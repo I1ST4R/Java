@@ -28,7 +28,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public void registerNewUser(UserRegistrationDto registrationDto) {
+    public Users registerNewUser(UserRegistrationDto registrationDto) {
         log.info("Starting user registration process for username: {}", registrationDto.getUsername());
         
         try {
@@ -59,13 +59,15 @@ public class UserService {
 
             log.debug("Created user object: {}", user);
 
-            // Get user role
+            // Get or create user role
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> {
-                        log.error("Role ROLE_USER not found in database");
-                        return new RoleNotFoundException("Role not found");
+                    .orElseGet(() -> {
+                        log.info("Creating new ROLE_USER role");
+                        Role newRole = new Role();
+                        newRole.setName(ERole.ROLE_USER);
+                        return roleRepository.save(newRole);
                     });
-            log.debug("Found user role: {}", userRole);
+            log.debug("Found/created user role: {}", userRole);
 
             user.setRoles(Collections.singleton(userRole));
             log.debug("Set roles for user: {}", user.getRoles());
@@ -74,11 +76,7 @@ public class UserService {
             try {
                 Users savedUser = userRepository.save(user);
                 log.info("User successfully saved to database with ID: {}", savedUser.getId());
-                
-                // Verify the user was saved
-                Users verifiedUser = userRepository.findById(savedUser.getId())
-                        .orElseThrow(() -> new RuntimeException("User not found after save"));
-                log.info("Verified saved user: {}", verifiedUser);
+                return savedUser;
             } catch (Exception e) {
                 log.error("Error saving user to database: {}", e.getMessage(), e);
                 throw e;
@@ -91,11 +89,25 @@ public class UserService {
 
     @Transactional
     public Users saveUser(Users user) {
-        // Проверяем, существует ли пользователь с таким email, только если email изменился
-        Users existingUser = userRepository.findById(user.getId()).orElse(null);
-        if (existingUser != null && !existingUser.getEmail().equals(user.getEmail())) {
+        // Если это новый пользователь (id == null), проверяем email и username
+        if (user.getId() == null) {
             if (userRepository.existsByEmail(user.getEmail())) {
                 throw new RuntimeException("User with email " + user.getEmail() + " already exists");
+            }
+            if (userRepository.existsByUsername(user.getUsername())) {
+                throw new RuntimeException("User with username " + user.getUsername() + " already exists");
+            }
+            return userRepository.save(user);
+        }
+        
+        // Если это существующий пользователь, проверяем изменение email и username
+        Users existingUser = userRepository.findById(user.getId()).orElse(null);
+        if (existingUser != null) {
+            if (!existingUser.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(user.getEmail())) {
+                throw new RuntimeException("User with email " + user.getEmail() + " already exists");
+            }
+            if (!existingUser.getUsername().equals(user.getUsername()) && userRepository.existsByUsername(user.getUsername())) {
+                throw new RuntimeException("User with username " + user.getUsername() + " already exists");
             }
         }
         return userRepository.save(user);
@@ -112,5 +124,9 @@ public class UserService {
 
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    public Optional<Users> findById(Long id) {
+        return userRepository.findById(id);
     }
 } 

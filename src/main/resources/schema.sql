@@ -4,6 +4,8 @@ USE my_app;
 
 -- Drop tables if they exist (in correct order to handle foreign keys)
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS schedule_intervals;
+DROP TABLE IF EXISTS trainer_schedules;
 DROP TABLE IF EXISTS trainer_skills;
 DROP TABLE IF EXISTS trainers;
 DROP TABLE IF EXISTS user_roles;
@@ -53,6 +55,24 @@ CREATE TABLE trainer_skills (
     skill VARCHAR(100) NOT NULL,
     PRIMARY KEY (trainer_id, skill),
     FOREIGN KEY (trainer_id) REFERENCES trainers(id)
+);
+
+CREATE TABLE trainer_schedules (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    trainer_id BIGINT NOT NULL,
+    date DATE NOT NULL,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id),
+    UNIQUE KEY unique_trainer_date (trainer_id, date)
+);
+
+CREATE TABLE schedule_intervals (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    schedule_id BIGINT NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    description TEXT,
+    FOREIGN KEY (schedule_id) REFERENCES trainer_schedules(id) ON DELETE CASCADE
 );
 
 -- Insert default roles
